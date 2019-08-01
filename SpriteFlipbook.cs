@@ -8,6 +8,11 @@ namespace Gruel.Flipbook {
 			get => _spriteRenderer.color;
 			set => _spriteRenderer.color = value;
 		}
+
+		public SpriteFlipbookData SpriteFlipbookData {
+			get => _flipbookData;
+			set => _flipbookData = value;
+		}
 #endregion Properties
 
 #region Fields
@@ -16,23 +21,9 @@ namespace Gruel.Flipbook {
 		
 		[Header("Renderer")]
 		[SerializeField] private SpriteRenderer _spriteRenderer;
-		[SerializeField] private bool _clearTintOnPool;
 #endregion Fields
 
 #region Public Methods
-		public override void Pool() {
-			base.Pool();
-
-			if (_clearFlipbookDataOnPool) {
-				_flipbookBaseData = null;
-				_flipbookData = null;
-			}
-			
-			if (_clearTintOnPool) {
-				_spriteRenderer.color = Color.white;
-			}
-		}
-
 		public void Play(SpriteFlipbookData flipbookData) {
 			_flipbookData = flipbookData;
 			
@@ -47,11 +38,15 @@ namespace Gruel.Flipbook {
 			
 			base.Play(play);
 		}
+
+		public override void ClearFlipbookData() {
+			base.ClearFlipbookData();
+			_flipbookData = null;
+		}
 #endregion Public Methods
 		
 #region Protected Methods
 		protected override void FinishedPlaying() {
-			
 			base.FinishedPlaying();
 			
 			if (_clearLastFrame) {
@@ -67,10 +62,6 @@ namespace Gruel.Flipbook {
 			_spriteRenderer.sprite = null;
 		}
 #endregion Protected Methods
-
-#region Private Methods
-
-#endregion Private Methods
 
 	}
 }

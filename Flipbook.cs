@@ -1,15 +1,20 @@
 using System;
 using System.Collections;
 using Gruel.CoroutineUtils;
-using Gruel.ObjectPool;
 using UnityEngine;
 
 namespace Gruel.Flipbook {
-	public abstract class Flipbook : MonoBehaviour, IPoolable {
+	public abstract class Flipbook : MonoBehaviour {
 
 #region Properties
 		public bool Playing { get; private set; }
+		
 		public Action OnFinishedPlaying;
+
+		public FlipbookData FlipbookData {
+			get => _flipbookBaseData;
+			set => _flipbookBaseData = value;
+		}
 		
 		public bool PlayOnStart {
 			get => _playOnStart;
@@ -30,7 +35,7 @@ namespace Gruel.Flipbook {
 			get => _clearLastFrame;
 			set => _clearLastFrame = value;
 		}
-
+		
 		private int Frame {
 			get => _frame;
 			set {
@@ -38,8 +43,6 @@ namespace Gruel.Flipbook {
 				FrameChanged();
 			}
 		}
-		
-		public int Hash { get; set; }
 #endregion Properties
 		
 #region Fields
@@ -49,43 +52,12 @@ namespace Gruel.Flipbook {
 		[SerializeField] protected float _delay;
 		[SerializeField] protected bool _clearLastFrame;
 		
-		[Header("Pool Settings")]
-		[SerializeField] protected bool _poolWhenFinished;
-		[SerializeField] protected bool _clearFlipbookDataOnPool;
-		[SerializeField] protected bool _clearDelayOnPool;
-		
 		protected FlipbookData _flipbookBaseData;
 		protected int _frame;
 		private ManagedCoroutine _flipbookCor;
 #endregion Fields
 		
 #region Public Methods
-		public virtual void Pool() {
-			if (Playing) {
-				Play(false);
-			}
-
-			if (_clearDelayOnPool) {
-				_delay = 0.0f;
-			}
-			
-			OnFinishedPlaying = null;
-			gameObject.SetActive(false);
-			var transform1 = transform;
-			transform1.rotation = Quaternion.identity;
-			transform1.localScale = Vector3.one;
-		}
-	
-		public void Unpool() {
-			gameObject.SetActive(true);
-		}
-
-		public void Destroy() {
-			if (gameObject != null) {
-				GameObject.Destroy(gameObject);
-			}
-		}
-
 		public virtual void Play(bool play) {
 			Playing = false;
 			_flipbookCor?.Stop();
@@ -96,6 +68,10 @@ namespace Gruel.Flipbook {
 			} else {
 				ClearFrame();
 			}
+		}
+
+		public virtual void ClearFlipbookData() {
+			_flipbookBaseData = null;
 		}
 #endregion Public Methods
 		
@@ -111,12 +87,7 @@ namespace Gruel.Flipbook {
 		}
 
 		protected virtual void FinishedPlaying() {
-			
 			OnFinishedPlaying?.Invoke();
-			
-			if (_poolWhenFinished) {
-				ObjectPool.ObjectPool.Repool(this);
-			}
 		}
 
 		protected abstract void FrameChanged();
