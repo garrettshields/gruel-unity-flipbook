@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Gruel.CoroutineUtils;
 using UnityEngine;
 
 namespace Gruel.Flipbook {
@@ -48,23 +47,26 @@ namespace Gruel.Flipbook {
 #region Fields
 		[Header("Playback Settings")]
 		[SerializeField] protected bool _playOnStart = true;
+		[SerializeField] protected bool _playOnEnable;
 		[SerializeField] protected bool _startAtRandomPlaybackPosition;
 		[SerializeField] protected float _delay;
 		[SerializeField] protected bool _clearLastFrame;
 		
 		protected FlipbookData _flipbookBaseData;
 		protected int _frame;
-		private ManagedCoroutine _flipbookCor;
+		private Coroutine _flipbookCor;
 #endregion Fields
 		
 #region Public Methods
 		public virtual void Play(bool play) {
-			Playing = false;
-			_flipbookCor?.Stop();
+			if (Playing) {
+				Playing = false;
+				StopCoroutine(_flipbookCor);
+			}
 
 			if (play) {
 				Playing = true;
-				_flipbookCor = CoroutineRunner.StartManagedCoroutine(FlipbookCor());
+				_flipbookCor = StartCoroutine(FlipbookCor());
 			} else {
 				ClearFrame();
 			}
@@ -95,7 +97,19 @@ namespace Gruel.Flipbook {
 #endregion Protected Methods
 		
 #region Private Methods
+		private void OnEnable() {
+			if (_playOnEnable) {
+				Play(true);
+			}
+		}
+		
+		private void OnDisable() {
+			Play(false);
+		}
+
 		private IEnumerator FlipbookCor() {
+			Playing = true;
+			
 			if (_delay > 0.0f) {
 				yield return new WaitForSeconds(_delay);
 			}
@@ -127,6 +141,8 @@ namespace Gruel.Flipbook {
 				Frame = (int) Mathf.Lerp(0.0f, numberOfFrames, playbackTimeNormal);
 				yield return null;
 			}
+
+			Playing = false;
 		}
 #endregion Private Methods
 
