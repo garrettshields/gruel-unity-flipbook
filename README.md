@@ -77,7 +77,7 @@ Type: `ScriptableObject`
 Asset creation menu: `Create/Gruel/SpriteFlipbookData`  
 Description: This is a concrete implementation of `FlipbookData`, and is specific to using `Sprites` as frames. It is the data file needed for both `SpriteFlipbook`, and `ImageFlipbook` flipbook players.
 
-## API
+### API
 * Properties:
 	* `Material` Material
 	* `int` Length
